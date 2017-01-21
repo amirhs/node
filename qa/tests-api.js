@@ -14,9 +14,7 @@ suite('API tests', function(){
 		'liking, there are six stories of modern art for your enjoyment.',
 		email: 'test@meadowlarktravel.com',
 	};
-	var base = function(){
-		return 'http://api.localhost:3000';
-	}
+	var base = 'http://api.localhost:3000';
 	test('should be able to add an attraction', function(done){
 		rest.get(base+'/attraction', {data:attraction}).on('success',
 		function(data){
