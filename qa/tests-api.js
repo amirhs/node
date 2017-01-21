@@ -2,6 +2,8 @@ var assert = require('chai').assert;
 var http = require('http');
 var rest = require('restler');
 
+
+
 suite('API tests', function(){
 	var attraction = {
 		lat: 45.516011,
@@ -12,20 +14,21 @@ suite('API tests', function(){
 		'liking, there are six stories of modern art for your enjoyment.',
 		email: 'test@meadowlarktravel.com',
 	};
-	var base = 'http://api.localhost:3000';
+	var base = function(){
+		return 'http://api.localhost:3000';
+	}
 	test('should be able to add an attraction', function(done){
-		rest.post(base+'/attractions', {data:attraction}).on('success',
+		rest.get(base+'/attraction', {data:attraction}).on('success',
 		function(data){
-			console.log("shoooooooooooooooood!");
 
 			assert.match(data.id, /\w/, 'id must be set');
 			done();
 		});
 	});
 	test('should be able to retrieve an attraction', function(done){
-		rest.post(base+'/api/attraction', {data:attraction}).on('success',
+		rest.post(base+'/attraction', {data:attraction}).on('success',
 		function(data){
-			rest.get(base+'/api/attraction/'+data.id).on('success',
+			rest.get(base+'/attraction/'+data.id).on('success',
 			function(data){
 				assert(data.name === attraction.name);
 				assert(data.description === attraction.description);
@@ -33,4 +36,14 @@ suite('API tests', function(){
 			});
 		});
 	});
+	// test('should be able to retrieve an attraction', function(done){
+	//
+	// 	rest.get(base+'/attraction/587cc5bf06f42d0c95ed6d9b').on('success',
+	// 	function(data){
+	// 		assert(data.name === attraction.name);
+	// 		assert(data.description === attraction.description);
+	// 		done();
+	// 	});
+	// });
+
 });

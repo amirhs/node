@@ -10,7 +10,6 @@
 	var session 		= require('express-session');
 	var MongoStore  = require('connect-mongo')(session);
 	var vhost 			= require('vhost');
-	// var rest 				= require('connect-rest');
 	var i18n 				= require('i18n');
 	var cookieParser= require('cookie-parser')
 	// var i18n				= require('i18n-abide');
@@ -184,18 +183,13 @@ i18n.configure({
 	}
 
 
-
 		// API configuration
 		var apiOptions = {
 		context: '',
 		domain: require('domain').create(),
 		};
 
-		const rest = require('connect-rest').create( apiOptions );
-
-
-		// app.use(rest.rester(apiOptions));
-
+		var rest = require('connect-rest').create( apiOptions );
 
 			apiOptions.domain.on('error', function(err){
 				console.log('API domain error.\n', err.stack);
@@ -214,10 +208,6 @@ i18n.configure({
 	// Routes
 	require('./API/routes/api.js')(api, rest);
 	require('./app/routes.js')(app, modules);
-
-
-
-
 
 
 
