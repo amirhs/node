@@ -1,4 +1,5 @@
 var fortune = require('../lib/fortune.js');
+var db 			= require('../lib/database');
 
 
 exports.home = function(req, res){
@@ -7,7 +8,21 @@ exports.home = function(req, res){
 
 exports.about = function(req, res){
 	res.setLocale(res, req.params.lang);
-	console.log(res.__("Hello"));
+
+	// console.log(db.connection());
+	var connection = db.connection();
+
+	db.query('SELECT * from users',
+	function(err, rows, fields) {
+		if (!err)
+			console.log('The solution is: ', rows[0].name),
+			db.end();
+		else
+			console.log("Error while perdorming Query.");
+	});
+
+	// console.log(db.end());
+
 	res.render('about', {
 		fortune: fortune.getFortune(),
 		pageTestScript: '/qa/tests-about.js',

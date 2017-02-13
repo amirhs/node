@@ -1,47 +1,36 @@
 var assert = require('chai').assert;
 var http = require('http');
 var rest = require('restler');
+var vhost 			= require('vhost');
 
-
-
-suite('API tests', function(){
-	var attraction = {
-		lat: 45.516011,
-		lng: -122.682062,
-		name: 'Portland Art Museum',
-		description: 'Founded in 1892, the Portland Art Museum\'s colleciton ' +
-		'of native art is not to be missed. If modern art is more to your ' +
-		'liking, there are six stories of modern art for your enjoyment.',
-		email: 'test@meadowlarktravel.com',
-	};
-	var base = 'http://api.localhost:3000';
-	test('should be able to add an attraction', function(done){
-		rest.get(base+'/attraction', {data:attraction}).on('success',
-		function(data){
-
-			assert.match(data.id, /\w/, 'id must be set');
-			done();
-		});
-	});
-	test('should be able to retrieve an attraction', function(done){
-		rest.post(base+'/attraction', {data:attraction}).on('success',
-		function(data){
-			rest.get(base+'/attraction/'+data.id).on('success',
+	suite('API tests', function(){
+		var attraction = {
+			lat: 45.516011,
+			lng: -122.682062,
+			name: 'Portland Art Museum',
+			description: 'Founded in 1892, the Portland Art Museum\'s colleciton ' +
+			'of native art is not to be missed. If modern art is more to your ' +
+			'liking, there are six stories of modern art for your enjoyment.',
+			email: 'test@meadowlarktravel.com',
+		};
+		var base = 'http://localhost:3000';
+		test('should be able to add an attraction', function(done){
+			rest.get(base+'/attraction', {data:attraction}).on('success',
 			function(data){
-				assert(data.name === attraction.name);
-				assert(data.description === attraction.description);
+
+				assert.match(data.id, /\w/, 'id must be set');
 				done();
 			});
 		});
+		test('should be able to retrieve an attraction', function(done
+			rest.post(base+'/attraction', {data:attraction}).on('success',
+			function(data){
+				rest.get(base+'/attraction/'+data.id).on('success',
+				function(data){
+					assert(data.name === attraction.name);
+					assert(data.description === attraction.description);
+					done();
+				});
+			});
+		});
 	});
-	// test('should be able to retrieve an attraction', function(done){
-	//
-	// 	rest.get(base+'/attraction/587cc5bf06f42d0c95ed6d9b').on('success',
-	// 	function(data){
-	// 		assert(data.name === attraction.name);
-	// 		assert(data.description === attraction.description);
-	// 		done();
-	// 	});
-	// });
-
-});

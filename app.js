@@ -9,9 +9,11 @@
 	var connect 		= require('connect');
 	var session 		= require('express-session');
 	var MongoStore  = require('connect-mongo')(session);
+	var mysql				= require('mysql');
 	var vhost 			= require('vhost');
 	var i18n 				= require('i18n');
-	var cookieParser= require('cookie-parser')
+	var cookieParser= require('cookie-parser');
+	var client			= require('socket.io').listen(3001).sockets;
 	// var i18n				= require('i18n-abide');
 
 
@@ -29,32 +31,31 @@
 
 
 
+
+
+
+
+
 	var app = express();
 	app.use(cookieParser());
 	app.use(i18n.init);
 
-// 	app.use(i18n.abide({
-//   supported_languages: ['en-US', 'de', 'ar'],
-//   default_lang: 'en-US',
-//   translation_directory: 'locales'
-// }));
+
+	// cluster settings
+	app.use(function(req,res,next){
+	var cluster = require('cluster');
+	if(cluster.isWorker) console.log('Worker %d received request',
+	cluster.worker.id);
+		next();
+	});
 
 
-// cluster settings
-app.use(function(req,res,next){
-var cluster = require('cluster');
-if(cluster.isWorker) console.log('Worker %d received request',
-cluster.worker.id);
-	next();
-});
-
-
-i18n.configure({
-	locales: ['en', 'de', 'ar'],
-	register: global,
-	defaultLocale : "de",
-	directory: __dirname + '/locales'
-});
+	i18n.configure({
+		locales: ['en', 'de', 'ar'],
+		register: global,
+		defaultLocale : "de",
+		directory: __dirname + '/locales'
+	});
 
 
 
@@ -87,9 +88,6 @@ i18n.configure({
 	app.engine('handlebars', handlebars.engine);
 	app.set('view engine', 'handlebars');
 
-	// handlebars.registerHelper('__', function(key, context) {
-	// 	return context.data.root.__(key);
-	// });
 
 	// log to console
 	app.use(morgan('dev'));
@@ -110,7 +108,7 @@ i18n.configure({
 	// create "admin" subdomain...this should appear
 	app.use(vhost('api.*', api));
 
-	app.use(vhost('api.*', require('cors')()));
+	// app.use(vhost('api.*', require('cors')()));
 	// pass passport for configuration
 	require('./config/passport')(passport);
 	// Use the passport package in our application
@@ -168,7 +166,43 @@ i18n.configure({
 	// app.use(require('express-session')({ store: sessionStore }));
 
 
+	client.on('connection', function(socket){
+		var chat = db.collection('chats');
+		sendStatus = function(s){
+			socket.emit('status', s);
+		};
 
+		chat.find().limit(100).sort({_id:1}).toArray(function(err, res){
+			if(err){
+				throw err
+			}
+			socket.emit('output', res);
+		});
+
+		socket.on('input', function(data){
+			var name = data.name;
+			var message = data.message;
+
+			if(name == '' || message == ''){
+				sendStatus('Please fill in name and message');
+			} else {
+				chat.insert({name:name, message: message}, function(){
+					client.emit('output', [data]);
+
+					sendStatus({
+						message: 'Message Sent',
+						clear: true
+					});
+				});
+			}
+		});
+
+		socket.on('cleaer', function(data){
+			chat.remove({}, function(){
+					socket.emit('cleared');
+			});
+		});
+	});
 
 
 	// Functions
@@ -201,7 +235,6 @@ i18n.configure({
 				var worker = require('cluster').worker;
 				if(worker) worker.disconnect();
 			});
-
 			app.use(vhost('api.*', rest.processRequest()));
 
 

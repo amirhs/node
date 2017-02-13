@@ -17,6 +17,9 @@ module.exports = function(app, modules) {
 
   app.get('/', main.home);
   app.get('/:lang?/about', main.about);
+  app.get('/amir', function(req, res){
+    res.json();
+  });
 
   // route for showing the profile page
   app.get('/:lang?/profile', user.isLoggedIn, user.profile);
